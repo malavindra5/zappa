@@ -1052,6 +1052,9 @@ class Zappa(object):
         if self.tags:
             self.lambda_client.tag_resource(Resource=resource_arn, Tags=self.tags)
 
+        # Wait for lambda to become active, otherwise many operations will fail
+        self.wait_until_lambda_function_is_active(function_name)
+
         return resource_arn
 
     def update_lambda_function(self, bucket, function_name, s3_key=None, publish=True, local_zip=None):
@@ -1085,7 +1088,8 @@ class Zappa(object):
                                         vpc_config=None,
                                         runtime='python2.7',
                                         aws_environment_variables=None,
-                                        aws_kms_key_arn=None
+                                        aws_kms_key_arn=None,
+                                        wait=True,
                                     ):
         """
         Given an existing function ARN, update the configuration variables.
@@ -1100,6 +1104,10 @@ class Zappa(object):
             aws_kms_key_arn = ''
         if not aws_environment_variables:
             aws_environment_variables = {}
+
+        if wait:
+            # Wait until function is ready, otherwise expected keys will be missing from 'lambda_aws_config'.
+            self.wait_until_lambda_function_is_updated(function_name)
 
         # Check if there are any remote aws lambda env vars so they don't get trashed.
         # https://github.com/Miserlou/Zappa/issues/987,  Related: https://github.com/Miserlou/Zappa/issues/765
@@ -1179,6 +1187,16 @@ class Zappa(object):
         response = self.lambda_client.update_function_code(FunctionName=function_name, ZipFile=response.content, Publish=publish)  # pragma: no cover
 
         return response['FunctionArn']
+
+    def wait_until_lambda_function_is_active(self, function_name):
+        waiter = self.lambda_client.get_waiter("function_active")
+        print(f"Waiting for lambda function [{function_name}] to become active...")
+        waiter.wait(FunctionName=function_name)
+
+    def wait_until_lambda_function_is_updated(self, function_name):
+        waiter = self.lambda_client.get_waiter("function_updated")
+        print(f"Waiting for lambda function [{function_name}] to be updated...")
+        waiter.wait(FunctionName=function_name)
 
     def get_lambda_function(self, function_name):
         """

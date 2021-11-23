@@ -811,6 +811,9 @@ class ZappaCLI(object):
                     self.zappa.add_api_stage_to_api_key(api_key=self.api_key, api_id=api_id, stage_name=self.api_stage)
 
             if self.stage_config.get('touch', True):
+                self.zappa.wait_until_lambda_function_is_updated(
+                    function_name=self.lambda_name
+                )
                 requests.get(endpoint_url)
 
         # Finally, delete the local copy our zip package
@@ -941,7 +944,8 @@ class ZappaCLI(object):
                                                         memory_size=self.memory_size,
                                                         runtime=self.runtime,
                                                         aws_environment_variables=self.aws_environment_variables,
-                                                        aws_kms_key_arn=self.aws_kms_key_arn
+                                                        aws_kms_key_arn=self.aws_kms_key_arn,
+                                                        wait=False
                                                     )
 
         # Finally, delete the local copy our zip package
@@ -1006,6 +1010,9 @@ class ZappaCLI(object):
                     deployed_string = deployed_string + " (" + api_url + ")"
 
             if self.stage_config.get('touch', True):
+                self.zappa.wait_until_lambda_function_is_updated(
+                    function_name=self.lambda_name
+                )
                 if api_url:
                     requests.get(api_url)
                 elif endpoint_url:
