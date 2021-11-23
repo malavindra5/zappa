@@ -1190,12 +1190,12 @@ class Zappa(object):
 
     def wait_until_lambda_function_is_active(self, function_name):
         waiter = self.lambda_client.get_waiter("function_active")
-        print(f"Waiting for lambda function [{function_name}] to become active...")
+        # print(f"Waiting for lambda function [{function_name}] to become active...")
         waiter.wait(FunctionName=function_name)
 
     def wait_until_lambda_function_is_updated(self, function_name):
         waiter = self.lambda_client.get_waiter("function_updated")
-        print(f"Waiting for lambda function [{function_name}] to be updated...")
+        # print(f"Waiting for lambda function [{function_name}] to be updated...")
         waiter.wait(FunctionName=function_name)
 
     def get_lambda_function(self, function_name):
