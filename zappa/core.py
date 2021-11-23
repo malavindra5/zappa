@@ -1089,7 +1089,7 @@ class Zappa(object):
                                         runtime='python2.7',
                                         aws_environment_variables=None,
                                         aws_kms_key_arn=None,
-                                        wait=True,
+                                        wait=True
                                     ):
         """
         Given an existing function ARN, update the configuration variables.
